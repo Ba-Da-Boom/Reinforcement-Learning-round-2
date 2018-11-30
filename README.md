@@ -1,6 +1,6 @@
 # s_invader_game
 This is another version of the Space invader I create lately with pygame.
-I adapt the game with the PLE (Pygame Learning Environment) which i thank a lot for creating an Environnement of Reinforcement Learning
+I adapt the game with the PLE (Pygame Learning Environment) which i thank a lot for letting me create an Environnement of Reinforcement Learning
 
 # Installation
 1.You need to install python3 (see for installation : https://www.python.org/)
