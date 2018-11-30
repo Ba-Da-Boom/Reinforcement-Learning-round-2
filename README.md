@@ -13,7 +13,7 @@ I adapt the game with the PLE (Pygame Learning Environment) which i thank a lot 
 
 # Starting the game
 
-1.cd PyGame-Learning-Environment/ple/games/
+1.cd ple/games/
 
 2.Starting the game with the dumb neural network : <br> </br>
     -> python3 space_i.py -d <br> </br>
@@ -27,5 +27,6 @@ I adapt the game with the PLE (Pygame Learning Environment) which i thank a lot 
 
 # TODO
 
-- [ ] add some plot to compare the Intelligent_neural_network to Dumb_neural_network with a socket (did it but failed need to do it again) <br> </br>
+- [ ] add some plot to compare the Intelligent_neural_network to Dumb_neural_network with a socket (did it but failed need to do it again maybe with only pygame) <br> </br>
+- [ ] need to resize the window for inserting the graph in the same window of the game <br> </br>
 - [ ] implement some DQN
