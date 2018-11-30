@@ -19,7 +19,7 @@ spaceship_dir = path.join(path.dirname(__file__), 'stuff', 'spaceship')
 img_dir = path.join(path.dirname(__file__), 'stuff', 'img')
 
 #Basics
-WIDTH = 900
+WIDTH = 1000
 HEIGHT = 800
 WIDTH_GAME = 600
 FPS = 60
@@ -53,11 +53,16 @@ def draw_shield_bar(surf, x, y, pct):
     BAR_LENGH = 100
     BAR_HEIGHT = 10
     fill = (pct/100)*BAR_LENGH
+    fill_half = ((pct /100) *BAR_LENGH )/2
     # ou bar_lengh est x et bar height est y
     outline_rect = pygame.Rect(x, y, BAR_LENGH, BAR_HEIGHT)
     fill_rect = pygame.Rect(x, y, fill, BAR_HEIGHT)
     pygame.draw.rect(surf, GREEN, fill_rect)
     pygame.draw.rect(surf, WHITE, outline_rect, 2)
+    if pct < 50:
+        pct = 50
+        fill_half_rect = pygame.Rect(x, y, fill_half, BAR_HEIGHT)
+        pygame.draw.rect(surf,RED, fill_half_rect)
 
 
 def draw_life_counter(surf, x, y, lives, img):
@@ -67,6 +72,16 @@ def draw_life_counter(surf, x, y, lives, img):
         img_rect.x = x + 30 * i
         img_rect.y = y
         surf.blit(img, img_rect)
+
+
+#graph
+# def graph(surface, pixel=10):
+#     axe_x = pygame.draw.line(suface, WHITE )
+
+
+
+
+
 
 #class
 class Player(pygame.sprite.Sprite):
@@ -575,8 +590,7 @@ if __name__=="__main__":
     pl = PLE(game, fps=30, display_screen=True,
              force_fps=False, reward_values=rewards, num_steps=1)
 
-
-############################################################################
+##################################################################################################
     #start the dumb_neural network
 
     if args.dumb :
