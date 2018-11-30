@@ -22,8 +22,6 @@ setup(
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
 	url='https://github.com/ntasfi/PyGame-Learning-Environment',
-	author='Norman Tasfi',
-	author_email='first letter of first name plus last at googles email service.',
 	keywords='',
 	license="MIT",
 	packages=find_packages(),
