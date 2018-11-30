@@ -16,11 +16,11 @@ I adapt the game with the PLE (Pygame Learning Environment) which i thank a lot 
 1.cd PyGame-Learning-Environment/ple/games/
 
 2.Starting the game with the dumb neural network :
-   _ python3 space_i.py -d
+   python3 space_i.py -d
 2.Starting the game with the intelligent neural network with the socket
-  _ python3 space_i.py -i 
+  python3 space_i.py -i 
 2.For help
-  _ python3 space_i.py -h
+  python3 space_i.py -h
 
 3.Have fun folks ...
 
