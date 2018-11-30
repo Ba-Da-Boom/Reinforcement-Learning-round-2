@@ -19,8 +19,9 @@ spaceship_dir = path.join(path.dirname(__file__), 'stuff', 'spaceship')
 img_dir = path.join(path.dirname(__file__), 'stuff', 'img')
 
 #Basics
-WIDTH = 800
+WIDTH = 900
 HEIGHT = 800
+WIDTH_GAME = 600
 FPS = 60
 
 # define colors
@@ -34,7 +35,7 @@ YELLOW = (255, 255, 0)
 
 pygame.init()
 pygame.display.set_mode(
-    (WIDTH, HEIGHT))
+    (WIDTH+WIDTH_GAME, HEIGHT))
 
 font_name = pygame.font.match_font("PressStart2P")
 def draw_text(surface, text, size, x, y):
@@ -82,7 +83,7 @@ class Player(pygame.sprite.Sprite):
         self.radius = 20
 
 
-        self.rect.centerx = WIDTH/2
+        self.rect.centerx = WIDTH_GAME/2
         self.rect.bottom = HEIGHT-10
 
         self.speedx = speed
@@ -119,14 +120,14 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += self.speedx
 
         #stay on the screen
-        if self.rect.right > WIDTH:
-            self.rect.right = WIDTH
+        if self.rect.right > WIDTH_GAME:
+            self.rect.right = WIDTH_GAME
         if self.rect.left < 0:
             self.rect.left = 0
 
         if self.hidden and pygame.time.get_ticks() - self.hide_timer > 1000:
             self.hidden = False
-            self.rect.centerx = WIDTH/2
+            self.rect.centerx = WIDTH_GAME/2
             self.rect.bottom = HEIGHT - 10
 
     def shoot(self):
@@ -141,7 +142,7 @@ class Player(pygame.sprite.Sprite):
     def hide(self):
         self.hidden = True
         self.hide_timer = pygame.time.get_ticks()
-        self.rect.center = (WIDTH/2, HEIGHT + 200)
+        self.rect.center = (WIDTH_GAME/2, HEIGHT + 200)
 
     def draw (self, screen):
         screen.blit(self.image, self.rect.center)
@@ -180,12 +181,12 @@ class Mob(pygame.sprite.Sprite):
             self.rect.center = old_center
 
     def update(self, dt):
-        self.rect.y += self.speedy * dt / 30
+        self.rect.y += self.speedy * dt / 60
 
         self.rect.x += self.speedx
 
-        if self.rect.top > HEIGHT + 10 or self.rect.left < 25 or self.rect.right > WIDTH + 20:
-            self.rect.x = random.randrange(WIDTH-self.rect.width)
+        if self.rect.top > HEIGHT + 10 or self.rect.left < 25 or self.rect.right > WIDTH_GAME + 20:
+            self.rect.x = random.randrange(WIDTH_GAME-self.rect.width)
             self.rect.y = random.randrange(-100, -40)
             self.speedy = random.randrange(1, 8)
 
@@ -275,7 +276,7 @@ class Pow (pygame.sprite.Sprite):
 class Space_Invader(PyGameWrapper):
     ''' the REINFORCEMENT LEARNING's agent '''
 
-    def __init__(self, width=WIDTH, height = HEIGHT, init_lives=10):
+    def __init__(self, width=WIDTH_GAME, height=HEIGHT, init_lives=10):
         actions = {
             "left": pygame.K_LEFT,
             "right": pygame.K_RIGHT,
@@ -446,10 +447,11 @@ class Space_Invader(PyGameWrapper):
         all_sprites.draw(self.screen)
 
 
-        draw_text(self.screen, str(self.score), 18, WIDTH/2, 10)
+        draw_text(self.screen, str(self.score), 18, WIDTH_GAME/2 -230, 30)
         draw_shield_bar(self.screen, 5, 5, self.player.shield)
 
-        draw_life_counter(self.screen, WIDTH - 340,5 , self.player.lives, player_mini_img)
+        draw_life_counter(self.screen, WIDTH_GAME - 350, 5,
+                          self.player.lives, player_mini_img)
 
         pygame.display.flip()
 
@@ -566,7 +568,7 @@ if __name__=="__main__":
 
     game = Space_Invader(width=WIDTH, height=HEIGHT)
     game.screen = pygame.display.set_mode(
-        (WIDTH, HEIGHT))  # width = x et height = y
+        (WIDTH_GAME, HEIGHT))  # width = x et height = y
     pygame.display.set_caption("Space-invaders-Reinforcement-Learning")
     game.clock = pygame.time.Clock()
 
