@@ -6,11 +6,13 @@ import sys
 import pygame
 import random
 import logging
+import time
+
 from os import path
 from ple import PLE
 from base.pygamewrapper import PyGameWrapper
 import numpy as np
-
+import pygame.gfxdraw
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +37,7 @@ YELLOW = (255, 255, 0)
 
 pygame.init()
 pygame.display.set_mode(
-    (WIDTH+WIDTH_GAME, HEIGHT))
+    (WIDTH, HEIGHT))
 
 font_name = pygame.font.match_font("PressStart2P")
 def draw_text(surface, text, size, x, y):
@@ -59,7 +61,7 @@ def draw_shield_bar(surf, x, y, pct):
     fill_rect = pygame.Rect(x, y, fill, BAR_HEIGHT)
     pygame.draw.rect(surf, GREEN, fill_rect)
     pygame.draw.rect(surf, WHITE, outline_rect, 2)
-    if pct < 50:
+    if pct <= 50:
         pct = 50
         fill_half_rect = pygame.Rect(x, y, fill_half, BAR_HEIGHT)
         pygame.draw.rect(surf,RED, fill_half_rect)
@@ -74,29 +76,77 @@ def draw_life_counter(surf, x, y, lives, img):
         surf.blit(img, img_rect)
 
 
-#graph
-# def graph(surface, pixel=10):
-#     axe_x = pygame.draw.line(suface, WHITE )
+def graph_bar(surf, x, y, pct):
+    if pct < 0:
+        pct = 0
+    BAR_POSITIVE_WIDTH= 90
+    BAR_POSITIVE_HEIGHT = -100
+    fill = (pct/100) * BAR_POSITIVE_HEIGHT
+    empty_bar_rect = pygame.Rect(x, y, BAR_POSITIVE_WIDTH, BAR_POSITIVE_HEIGHT)
+    fill_rect_live = pygame.Rect(x, y, BAR_POSITIVE_WIDTH, fill)
+    fill_rect_speed = pygame.Rect(x, y, BAR_POSITIVE_WIDTH, fill)
+
+    pygame.draw.rect(surf, RED, fill_rect_live)
+    pygame.draw.rect(surf, YELLOW, fill_rect_live)
+
+    pygame.draw.rect(surf,WHITE, empty_bar_rect, 2)
+
+def graph_text(surf, x,y ,size, text):
+    graph_font = pygame.font.Font(font_name, size)
+    graph_text = graph_font.render(text, True, WHITE)
+    graph_rect = graph_text.get_rect()
+    graph_rect.midright = (x,y)
+    surf.blit(graph_text, graph_rect)
+
+
+
+def count_down():
+    number = random.randint(0, 60)
+    while number >= 0 :
+        time_count_down = [1, 1, 0 ]
+        seconds = time_count_down[2]
+        minutes = time_count_down[1]
+        hours = time_count_down[0]
+
+        if seconds <0:
+            seconds = 60
+            minutes -=1
+
+            if minutes < 0:
+                minutes = 59
+                hours -=1
+
+                if hours < 0:
+                    time_count_down = [0,0,0]
+
+
+        render_time = str(hours).zfill(2) + ":" + str(minutes).zfill(2)+ ":"+ str(seconds).zfill(2)
+        number -=1
+
+        return render_time
 
 
 
 
+def draw_count_down(surface, x, y, size, hour):
+    font = pygame.font.Font(font_name, size)
+    text_surface = font.render(hour, True, WHITE)
+    text_rect = text_surface.get_rect()
+    text_rect.topright = (x, y)
+    surface.blit(text_surface, text_rect)
 
 
-#class
+
 class Player(pygame.sprite.Sprite):
     # sprite for the Player
     def __init__(self, speed=0, lives=10 ):
 
-
         pygame.sprite.Sprite.__init__(self)
 
         self.image = pygame.transform.scale(player_img, (50, 60))
-
         # find the rectangle that encloses the image
         self.rect = self.image.get_rect()
         self.radius = 20
-
 
         self.rect.centerx = WIDTH_GAME/2
         self.rect.bottom = HEIGHT-10
@@ -117,11 +167,6 @@ class Player(pygame.sprite.Sprite):
 
     #la ou on effectue les changements
     def update(self,dt, dx=0):
-
-        # any code here will happen every time the game loop updates
-
-        #keys
-
         self.speedx = dx
 
         keystate = pygame.key.get_pressed()
@@ -247,7 +292,6 @@ class Explosion(pygame.sprite.Sprite):
         ''' dt : int
             derivated of the time  '''
 
-
         now = pygame.time.get_ticks()
         if now - self.last_update > self.frame_rate * dt /100 :
             self.last_update = now
@@ -297,8 +341,9 @@ class Space_Invader(PyGameWrapper):
             "right": pygame.K_RIGHT,
             "shoot": pygame.K_SPACE
         }
-        PyGameWrapper.__init__(self, width, height, actions=actions )
+        PyGameWrapper.__init__(self, width, height, actions=actions)
         self.init_lives = init_lives
+
 
         self.bullet_speed = 0.00003 * height
 
@@ -338,7 +383,8 @@ class Space_Invader(PyGameWrapper):
         self.score = 0
         self.lives = self.init_lives
         self.player = Player(self.player_speed, self.lives)
-
+        # self.graph_init = Graph(self.screen ,650, 300,
+                                # self.width - 12, self.height-24, WHITE)
 
         if self.mob is None:
             self.mob = mobs
@@ -384,12 +430,12 @@ class Space_Invader(PyGameWrapper):
 
         self.screen.fill(BLACK)
         self._handle_player_events()
-        self.score += self.rewards["tick"]
+        self.score += count_other
 
         mo = Mob()
 
         if mo.rect.center[1] >= self.height:
-            self.score +=self.rewards["negative"]
+            self.score +=count_negative
             self.lives -= 1
             logger.info("your score is now at :", self.score)
 
@@ -400,7 +446,7 @@ class Space_Invader(PyGameWrapper):
         hits = pygame.sprite.groupcollide(self.mob, self.bullets, True, True)
         for hit in hits:
             self.score += 50 - hit.radius
-            self.score += self.rewards["positive"]
+            self.score += count_positive
             logger.info("your score is now at :", self.score)
             expl = Explosion(hit.rect.center, "lg")
             all_sprites.add(expl)
@@ -417,7 +463,7 @@ class Space_Invader(PyGameWrapper):
             self.player, self.mob, True, pygame.sprite.collide_circle)
         for hit in hits:
             self.player.shield -= hit.radius * 2
-            self.score += self.rewards["negative"]
+            self.score += count_negative
             logger.info("your score is now at :", self.score)
 
             expl = Explosion(hit.rect.center, "sm")
@@ -432,17 +478,10 @@ class Space_Invader(PyGameWrapper):
                 self.player.lives -= 1
                 self.player.shield = 100
 
-        #update everything
-        all_sprites.update(dt)
-        self.player.update(dt, self.dx)
-        self.mob.update(dt)
-        self.bullets.update(dt)
-
         if self.player.lives == 0 and not death_explosion.alive():
             logger.info("ITS GAME OVER")
-            self.score += self.rewards["loss"]
+            self.score += count_loss
 
-        #check to see if player hit a powerup
         hits = pygame.sprite.spritecollide(self.player, self.powerups, True)
         for hit in hits:
             if hit.type == "shield":
@@ -451,9 +490,20 @@ class Space_Invader(PyGameWrapper):
                     self.player.shield = 100
                 logger.info("player has taken the shield", self.score)
 
+
+        #update everything
+        all_sprites.update(dt)
+        self.player.update(dt, self.dx)
+        self.mob.update(dt)
+        self.bullets.update(dt)
+        # self.graph_init.update(dt)
+        #check to see if player hit a powerup
+
+
         #draw everything
         self.screen.fill(BLACK)
         self.screen.blit(background, background_rect)
+
 
         self.player.draw(self.screen)
         self.mob.draw(self.screen)
@@ -462,11 +512,24 @@ class Space_Invader(PyGameWrapper):
         all_sprites.draw(self.screen)
 
 
+
         draw_text(self.screen, str(self.score), 18, WIDTH_GAME/2 -230, 30)
         draw_shield_bar(self.screen, 5, 5, self.player.shield)
 
         draw_life_counter(self.screen, WIDTH_GAME - 350, 5,
                           self.player.lives, player_mini_img)
+
+        draw_count_down(self.screen, WIDTH - 100, 10, 17, count_down())
+
+        graph_bar(self.screen, 600, 500, self.player.speedx)
+        graph_bar(self.screen, 700, 500, self.player.lives)
+        graph_bar(self.screen, 800, 500, count_positive)
+        graph_bar(self.screen, 900, 500, count_negative)
+
+        graph_text(self.screen, 675, 550, 15, str(self.player.speedx))
+        graph_text(self.screen, 775, 550, 15, str(self.lives))
+        graph_text(self.screen, 875, 550, 15, str(count_positive))
+        graph_text(self.screen, 975, 550, 15, str(count_negative))
 
         pygame.display.flip()
 
@@ -531,17 +594,10 @@ powerup_images["gun"] = pygame.image.load(path.join(
 if __name__=="__main__":
     import numpy as np
     import argparse
-    import socket
-
-    import struct
     import os
     from RandomL import Dumb_neural_network
     from QL import Intelligent_neural_network
     from threading import Thread
-
-
-
-
 
     basedir = path.dirname(__file__)
 

@@ -3,13 +3,14 @@ This is another version of the Space invader I create lately with pygame.
 I adapt the game with the PLE (Pygame Learning Environment) which i thank a lot for letting me create an Environnement of Reinforcement Learning
 
 # Installation
-1.You need to install python3 (see for installation : https://www.python.org/)
+1.You may need to install python3 (see for installation : https://www.python.org/)
 
-2.You need to install pygame (see for installation : https://www.pygame.org/wiki/GettingStarted)
+2.You may need to install pygame (see for installation : https://www.pygame.org/wiki/GettingStarted)
 
-3.install pillow with : python3 -m pip install Pillow
+3.You may need to install pillow with : python3 -m pip install Pillow
 
-4.install matplotlib with : python -m pip install -U matplotlib
+4.You may need to install the font PressStart2p : https://fonts.google.com/specimen/Press+Start+2P?selection.family=Press+Start+2P
+
 
 # Starting the game
 
@@ -27,6 +28,8 @@ I adapt the game with the PLE (Pygame Learning Environment) which i thank a lot 
 
 # TODO
 
-- [ ] add some plot to compare the Intelligent_neural_network to Dumb_neural_network with a socket (did it but failed need to do it again maybe with only pygame) <br> </br>
-- [ ] need to resize the window for inserting the graph in the same window of the game <br> </br>
-- [ ] implement some DQN
+- [X] add some plot to compare the Intelligent_neural_network to Dumb_neural_network with a socket (did it but failed need to do it again maybe with only pygame) <br> </br>
+- [X] need to resize the window for inserting the graph in the same window of the game <br> </br>
+- [ ] fix the issue with the countdown <br> </br>
+- [ ] implement some DQN <br> </br>
+- [ ] add some gif or video to show the output
