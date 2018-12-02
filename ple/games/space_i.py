@@ -39,6 +39,8 @@ pygame.init()
 pygame.display.set_mode(
     (WIDTH, HEIGHT))
 
+
+
 font_name = pygame.font.match_font("PressStart2P")
 def draw_text(surface, text, size, x, y):
     ''' style the font text '''
@@ -137,6 +139,8 @@ def draw_count_down(surface, x, y, size, hour):
 
 
 
+
+
 class Player(pygame.sprite.Sprite):
     # sprite for the Player
     def __init__(self, speed=0, lives=10 ):
@@ -165,7 +169,7 @@ class Player(pygame.sprite.Sprite):
         self.hidden = False
         self.hide_timer = pygame.time.get_ticks()
 
-    #la ou on effectue les changements
+
     def update(self,dt, dx=0):
         self.speedx = dx
 
@@ -196,8 +200,8 @@ class Player(pygame.sprite.Sprite):
             self.last_shot = now
             bullet = Bullet(self.rect.centerx, self.rect.top, -5)
             all_sprites.add(bullet)
-            # pas oublie de rajouter bullets en sprite.group()
             bullets.add(bullet)
+
 
     def hide(self):
         self.hidden = True
@@ -332,6 +336,26 @@ class Pow (pygame.sprite.Sprite):
 #########################################################################
 #ENVIRONNEMENT
 
+rewards = {
+    "ticks": -0.01,
+    "positive": 1.0,
+    "negative": -1.0,
+    "loss": -5.0,
+    "win": 5.0
+}
+
+count_loss = 0
+count_win = 0
+count_other = 0.0
+count_positive = 0.0
+count_negative = 0.0
+win = rewards["win"]
+loss = rewards["loss"]
+negatif = rewards["negative"]
+positif = rewards["positive"]
+other = rewards["ticks"]
+waiting = True
+
 class Space_Invader(PyGameWrapper):
     ''' the REINFORCEMENT LEARNING's agent '''
 
@@ -383,8 +407,7 @@ class Space_Invader(PyGameWrapper):
         self.score = 0
         self.lives = self.init_lives
         self.player = Player(self.player_speed, self.lives)
-        # self.graph_init = Graph(self.screen ,650, 300,
-                                # self.width - 12, self.height-24, WHITE)
+
 
         if self.mob is None:
             self.mob = mobs
@@ -418,35 +441,45 @@ class Space_Invader(PyGameWrapper):
         return state
 
     def getScore(self):
-        return self.score
+        return abs(self.score)
 
     def game_over(self):
         return self.lives == 0
 
+    def restart(self):
+        while waiting:
+            clock.tick(30)
+            for event in pygame.event.get():
+                if event.type == actions["left"] or actions["right"] or actions["shoot"]:
+                    waiting = False
 
     def step(self, dt):
         ''' dt : int
             derivated of the time  '''
+        global count_positive
+        global count_negative
+        global count_other
 
         self.screen.fill(BLACK)
         self._handle_player_events()
-        self.score += count_other
+        self.score += other
+        count_other +=1
 
         mo = Mob()
 
         if mo.rect.center[1] >= self.height:
-            self.score +=count_negative
+            self.score +=negatif
+            count_negative +=1
             self.lives -= 1
-            logger.info("your score is now at :", self.score)
-
+            logger.info("your score is now at :", abs(self.score))
 
 
         #check to see if a bullet hit a mob
-
         hits = pygame.sprite.groupcollide(self.mob, self.bullets, True, True)
         for hit in hits:
             self.score += 50 - hit.radius
-            self.score += count_positive
+            self.score += positif
+            count_positive +=1
             logger.info("your score is now at :", self.score)
             expl = Explosion(hit.rect.center, "lg")
             all_sprites.add(expl)
@@ -457,14 +490,15 @@ class Space_Invader(PyGameWrapper):
 
             self.add_mob()
 
-        # check to see if a mob it the player
+
 
         hits = pygame.sprite.spritecollide(
             self.player, self.mob, True, pygame.sprite.collide_circle)
         for hit in hits:
             self.player.shield -= hit.radius * 2
-            self.score += count_negative
-            logger.info("your score is now at :", self.score)
+            self.score += negatif
+            count_negative +=1
+            logger.info("your score is now at :", abs(self.score))
 
             expl = Explosion(hit.rect.center, "sm")
             all_sprites.add(expl)
@@ -479,8 +513,12 @@ class Space_Invader(PyGameWrapper):
                 self.player.shield = 100
 
         if self.player.lives == 0 and not death_explosion.alive():
+            game.game_over()
             logger.info("ITS GAME OVER")
-            self.score += count_loss
+            self.score += loss
+            count_loss +=1
+            pl.reset_game()
+            self.restart()
 
         hits = pygame.sprite.spritecollide(self.player, self.powerups, True)
         for hit in hits:
@@ -488,7 +526,7 @@ class Space_Invader(PyGameWrapper):
                 self.player.shield += random.randrange(10, 30)
                 if self.player.shield >= 100:
                     self.player.shield = 100
-                logger.info("player has taken the shield", self.score)
+                logger.info("player has taken the shield", abs(self.score))
 
 
         #update everything
@@ -496,8 +534,8 @@ class Space_Invader(PyGameWrapper):
         self.player.update(dt, self.dx)
         self.mob.update(dt)
         self.bullets.update(dt)
-        # self.graph_init.update(dt)
-        #check to see if player hit a powerup
+
+
 
 
         #draw everything
@@ -513,7 +551,7 @@ class Space_Invader(PyGameWrapper):
 
 
 
-        draw_text(self.screen, str(self.score), 18, WIDTH_GAME/2 -230, 30)
+        draw_text(self.screen, str(abs(self.score)), 18, WIDTH_GAME/2 -75, 30)
         draw_shield_bar(self.screen, 5, 5, self.player.shield)
 
         draw_life_counter(self.screen, WIDTH_GAME - 350, 5,
@@ -523,13 +561,20 @@ class Space_Invader(PyGameWrapper):
 
         graph_bar(self.screen, 600, 500, self.player.speedx)
         graph_bar(self.screen, 700, 500, self.player.lives)
-        graph_bar(self.screen, 800, 500, count_positive)
-        graph_bar(self.screen, 900, 500, count_negative)
+        graph_bar(self.screen, 800, 500, positif)
+        graph_bar(self.screen, 900, 500, negatif)
 
         graph_text(self.screen, 675, 550, 15, str(self.player.speedx))
-        graph_text(self.screen, 775, 550, 15, str(self.lives))
+        graph_text(self.screen, 675, 375, 15, str("speed"))
+
+        graph_text(self.screen, 775, 550, 15, str(self.player.lives))
+        graph_text(self.screen, 775, 375, 15, str("lives"))
+
         graph_text(self.screen, 875, 550, 15, str(count_positive))
+        graph_text(self.screen, 850, 375, 15, str("+"))
+
         graph_text(self.screen, 975, 550, 15, str(count_negative))
+        graph_text(self.screen, 950, 375, 15, str("-"))
 
         pygame.display.flip()
 
@@ -618,25 +663,6 @@ if __name__=="__main__":
     #start the engine
     pygame.init()
 
-    rewards = {
-        "ticks": -0.01,
-        "positive": 1.0,
-        "negative": -1.0,
-        "loss": -5.0,
-        "win": 5.0
-    }
-
-    count_loss = 0
-    count_win = 0
-    count_other = 0.0
-    count_positive = 0.0
-    count_negative = 0.0
-    win = rewards["win"]
-    loss = rewards["loss"]
-    negatif = rewards["negative"]
-    positif = rewards["positive"]
-    other = rewards["ticks"]
-
     game = Space_Invader(width=WIDTH, height=HEIGHT)
     game.screen = pygame.display.set_mode(
         (WIDTH_GAME, HEIGHT))  # width = x et height = y
@@ -658,8 +684,8 @@ if __name__=="__main__":
 
         # pl.init() # active the PLE environnement
 
-        while True:
 
+        while True:
             dt = game.clock.tick_busy_loop(25)
 
             for _ in range(1000):
