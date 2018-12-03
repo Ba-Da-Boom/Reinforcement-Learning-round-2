@@ -334,7 +334,7 @@ positif = rewards["positive"]
 other = rewards["ticks"]
 waiting = True
 
-frame_rate = 45
+frame_rate = 30
 frame_count = 0
 clock = pygame.time.Clock()
 
