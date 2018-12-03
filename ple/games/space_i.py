@@ -12,7 +12,7 @@ from os import path
 from ple import PLE
 from base.pygamewrapper import PyGameWrapper
 import numpy as np
-import pygame.gfxdraw
+
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ pygame.display.set_mode(
 font_name = pygame.font.match_font("PressStart2P")
 def draw_text(surface, text, size, x, y):
     ''' surf = surface
-        x, y = position in the screen
+        x, y = position on the screen
         size = size of the text
         text = text '''
 
@@ -56,7 +56,7 @@ def draw_text(surface, text, size, x, y):
 
 def draw_shield_bar(surf, x, y, pct):
     ''' surf = surface
-        x, y = position in the screen
+        x, y = position on the screen
         size = size of the text
         pct = pixel '''
 
@@ -78,7 +78,7 @@ def draw_shield_bar(surf, x, y, pct):
 
 def graph_bar(surf, x, y, pct):
     ''' surf = surface
-        x, y = position in the screen
+        x, y = position on the screen
         size = size of the text
         pct = pixel '''
     if pct < 0:
@@ -97,7 +97,7 @@ def graph_bar(surf, x, y, pct):
 
 def graph_text(surf, x,y ,size, text):
     ''' surf = surface
-        x, y = position in the screen
+        x, y = position on the screen
         size = size of the text
         text = text with the font '''
     graph_font = pygame.font.Font(font_name, size)
