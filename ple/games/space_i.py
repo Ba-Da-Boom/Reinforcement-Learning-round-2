@@ -43,7 +43,11 @@ pygame.display.set_mode(
 
 font_name = pygame.font.match_font("PressStart2P")
 def draw_text(surface, text, size, x, y):
-    ''' style the font text '''
+    ''' surf = surface
+        x, y = position in the screen
+        size = size of the text
+        text = text '''
+
     font = pygame.font.Font(font_name, size)
     text_surface = font.render(text, True, WHITE)
     text_rect = text_surface.get_rect()
@@ -51,7 +55,11 @@ def draw_text(surface, text, size, x, y):
     surface.blit(text_surface, text_rect)
 
 def draw_shield_bar(surf, x, y, pct):
-    ''' draw the shield bar '''
+    ''' surf = surface
+        x, y = position in the screen
+        size = size of the text
+        pct = pixel '''
+
     if pct < 0:
         pct = 0
     BAR_LENGH = 100
@@ -62,23 +70,17 @@ def draw_shield_bar(surf, x, y, pct):
     outline_rect = pygame.Rect(x, y, BAR_LENGH, BAR_HEIGHT)
     fill_rect = pygame.Rect(x, y, fill, BAR_HEIGHT)
     pygame.draw.rect(surf, GREEN, fill_rect)
-    pygame.draw.rect(surf, WHITE, outline_rect, 2)
     if pct <= 50:
         pct = 50
         fill_half_rect = pygame.Rect(x, y, fill_half, BAR_HEIGHT)
         pygame.draw.rect(surf,RED, fill_half_rect)
-
-
-def draw_life_counter(surf, x, y, lives, img):
-    ''' draw the counter '''
-    for i in range(lives):
-        img_rect = img.get_rect()
-        img_rect.x = x + 30 * i
-        img_rect.y = y
-        surf.blit(img, img_rect)
-
+    pygame.draw.rect(surf, WHITE, outline_rect, 2)
 
 def graph_bar(surf, x, y, pct):
+    ''' surf = surface
+        x, y = position in the screen
+        size = size of the text
+        pct = pixel '''
     if pct < 0:
         pct = 0
     BAR_POSITIVE_WIDTH= 90
@@ -94,41 +96,15 @@ def graph_bar(surf, x, y, pct):
     pygame.draw.rect(surf,WHITE, empty_bar_rect, 2)
 
 def graph_text(surf, x,y ,size, text):
+    ''' surf = surface
+        x, y = position in the screen
+        size = size of the text
+        text = text with the font '''
     graph_font = pygame.font.Font(font_name, size)
     graph_text = graph_font.render(text, True, WHITE)
     graph_rect = graph_text.get_rect()
     graph_rect.midright = (x,y)
     surf.blit(graph_text, graph_rect)
-
-
-
-def count_down():
-    number = random.randint(0, 60)
-    while number >= 0 :
-        time_count_down = [1, 1, 0 ]
-        seconds = time_count_down[2]
-        minutes = time_count_down[1]
-        hours = time_count_down[0]
-
-        if seconds <0:
-            seconds = 60
-            minutes -=1
-
-            if minutes < 0:
-                minutes = 59
-                hours -=1
-
-                if hours < 0:
-                    time_count_down = [0,0,0]
-
-
-        render_time = str(hours).zfill(2) + ":" + str(minutes).zfill(2)+ ":"+ str(seconds).zfill(2)
-        number -=1
-
-        return render_time
-
-
-
 
 def draw_count_down(surface, x, y, size, hour):
     font = pygame.font.Font(font_name, size)
@@ -138,12 +114,13 @@ def draw_count_down(surface, x, y, size, hour):
     surface.blit(text_surface, text_rect)
 
 
-
-
-
 class Player(pygame.sprite.Sprite):
     # sprite for the Player
     def __init__(self, speed=0, lives=10 ):
+        ''' speed : Int
+                by default is 0
+            lives : Int
+                by by default 10'''
 
         pygame.sprite.Sprite.__init__(self)
 
@@ -171,6 +148,7 @@ class Player(pygame.sprite.Sprite):
 
 
     def update(self,dt, dx=0):
+        ''' update the position, speed  '''
         self.speedx = dx
 
         keystate = pygame.key.get_pressed()
@@ -195,13 +173,13 @@ class Player(pygame.sprite.Sprite):
             self.rect.bottom = HEIGHT - 10
 
     def shoot(self):
+        ''' player shoot '''
         now = pygame.time.get_ticks()
         if now - self.last_shot > self.shoot_delay:
             self.last_shot = now
             bullet = Bullet(self.rect.centerx, self.rect.top, -5)
             all_sprites.add(bullet)
             bullets.add(bullet)
-
 
     def hide(self):
         self.hidden = True
@@ -245,6 +223,7 @@ class Mob(pygame.sprite.Sprite):
             self.rect.center = old_center
 
     def update(self, dt):
+        ''' update the position, speed of the mob '''
         self.rect.y += self.speedy * dt / 60
 
         self.rect.x += self.speedx
@@ -310,7 +289,6 @@ class Explosion(pygame.sprite.Sprite):
                 self.rect.center = center
 
 
-
 class Pow (pygame.sprite.Sprite):
     ''' display the power item '''
     def __init__(self, center):
@@ -355,6 +333,11 @@ negatif = rewards["negative"]
 positif = rewards["positive"]
 other = rewards["ticks"]
 waiting = True
+
+frame_rate = 45
+frame_count = 0
+clock = pygame.time.Clock()
+
 
 class Space_Invader(PyGameWrapper):
     ''' the REINFORCEMENT LEARNING's agent '''
@@ -405,6 +388,7 @@ class Space_Invader(PyGameWrapper):
     def init(self):
         ''' init the agent '''
         self.score = 0
+
         self.lives = self.init_lives
         self.player = Player(self.player_speed, self.lives)
 
@@ -424,6 +408,25 @@ class Space_Invader(PyGameWrapper):
         for i in range(15):
             self.add_mob()
 
+
+    def count_up(self):
+        
+        global frame_count
+        global frame_rate
+
+
+        frame_count += 1
+        tot_seconds = (frame_count // frame_rate)
+
+        if tot_seconds <= 0:
+            tot_seconds = 0
+        minute = tot_seconds // 60
+        new_sec = tot_seconds % 60
+
+
+        render_time = str(minute).zfill(2) + ":" + str(new_sec).zfill(2)
+
+        return render_time
 
 
     def getGameStateDims(self):
@@ -448,7 +451,7 @@ class Space_Invader(PyGameWrapper):
 
     def restart(self):
         while waiting:
-            clock.tick(30)
+            clock.tick(100)
             for event in pygame.event.get():
                 if event.type == actions["left"] or actions["right"] or actions["shoot"]:
                     waiting = False
@@ -459,6 +462,8 @@ class Space_Invader(PyGameWrapper):
         global count_positive
         global count_negative
         global count_other
+        global frame_rate
+        global frame_count
 
         self.screen.fill(BLACK)
         self._handle_player_events()
@@ -490,8 +495,6 @@ class Space_Invader(PyGameWrapper):
 
             self.add_mob()
 
-
-
         hits = pygame.sprite.spritecollide(
             self.player, self.mob, True, pygame.sprite.collide_circle)
         for hit in hits:
@@ -512,13 +515,14 @@ class Space_Invader(PyGameWrapper):
                 self.player.lives -= 1
                 self.player.shield = 100
 
-        if self.player.lives == 0 and not death_explosion.alive():
+        if self.player.lives == 0 :
             game.game_over()
             logger.info("ITS GAME OVER")
             self.score += loss
             count_loss +=1
             pl.reset_game()
             self.restart()
+            self.count_up()
 
         hits = pygame.sprite.spritecollide(self.player, self.powerups, True)
         for hit in hits:
@@ -536,8 +540,6 @@ class Space_Invader(PyGameWrapper):
         self.bullets.update(dt)
 
 
-
-
         #draw everything
         self.screen.fill(BLACK)
         self.screen.blit(background, background_rect)
@@ -551,13 +553,10 @@ class Space_Invader(PyGameWrapper):
 
 
 
-        draw_text(self.screen, str(abs(self.score)), 18, WIDTH_GAME/2 -75, 30)
+        draw_text(self.screen, str(abs(self.score)), 18, 775, 600)
         draw_shield_bar(self.screen, 5, 5, self.player.shield)
 
-        draw_life_counter(self.screen, WIDTH_GAME - 350, 5,
-                          self.player.lives, player_mini_img)
-
-        draw_count_down(self.screen, WIDTH - 100, 10, 17, count_down())
+        draw_count_down(self.screen, WIDTH - 100, 10, 17, self.count_up())
 
         graph_bar(self.screen, 600, 500, self.player.speedx)
         graph_bar(self.screen, 700, 500, self.player.lives)
@@ -576,7 +575,9 @@ class Space_Invader(PyGameWrapper):
         graph_text(self.screen, 975, 550, 15, str(count_negative))
         graph_text(self.screen, 950, 375, 15, str("-"))
 
+        clock.tick(100)
         pygame.display.flip()
+
 
 
 ########################################################################################################
@@ -686,7 +687,7 @@ if __name__=="__main__":
 
 
         while True:
-            dt = game.clock.tick_busy_loop(25)
+            dt = game.clock.tick_busy_loop(30)
 
             for _ in range(1000):
                 if game.game_over():
@@ -718,8 +719,6 @@ if __name__=="__main__":
             pygame.display.update()
 
 
-
-
 ####################################################################################################################################################
     #start the Intelligent agent
     if args.intell :
@@ -727,7 +726,7 @@ if __name__=="__main__":
         # pl.init()
 
         while True:
-            dt = game.clock.tick_busy_loop(25)
+            dt = game.clock.tick_busy_loop(30)
             for _ in range(1000):
                 if pl.game_over():
                     pl.reset_game()
