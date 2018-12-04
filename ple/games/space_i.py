@@ -332,8 +332,8 @@ loss = rewards["loss"]
 negatif = rewards["negative"]
 positif = rewards["positive"]
 other = rewards["ticks"]
-waiting = True
 
+cycle = 0
 frame_rate = 30
 frame_count = 0
 clock = pygame.time.Clock()
@@ -388,7 +388,7 @@ class Space_Invader(PyGameWrapper):
     def init(self):
         ''' init the agent '''
         self.score = 0
-
+        self.time = self.count_up()
         self.lives = self.init_lives
         self.player = Player(self.player_speed, self.lives)
 
@@ -450,11 +450,9 @@ class Space_Invader(PyGameWrapper):
         return self.lives == 0
 
     def restart(self):
-        while waiting:
-            clock.tick(100)
-            for event in pygame.event.get():
-                if event.type == actions["left"] or actions["right"] or actions["shoot"]:
-                    waiting = False
+        global cycle
+        self.init()
+        cycle +=1
 
     def step(self, dt):
         ''' dt : int
@@ -464,6 +462,8 @@ class Space_Invader(PyGameWrapper):
         global count_other
         global frame_rate
         global frame_count
+        global count_loss
+        global cycle
 
         self.screen.fill(BLACK)
         self._handle_player_events()
@@ -522,7 +522,7 @@ class Space_Invader(PyGameWrapper):
             count_loss +=1
             pl.reset_game()
             self.restart()
-            self.count_up()
+            
 
         hits = pygame.sprite.spritecollide(self.player, self.powerups, True)
         for hit in hits:
@@ -554,6 +554,7 @@ class Space_Invader(PyGameWrapper):
 
 
         draw_text(self.screen, str(abs(self.score)), 18, 775, 600)
+        draw_text(self.screen, str("game :{}".format(abs(cycle))), 15, 675, 650)
         draw_shield_bar(self.screen, 5, 5, self.player.shield)
 
         draw_count_down(self.screen, WIDTH - 100, 10, 17, self.count_up())
