@@ -106,7 +106,7 @@ def graph_text(surf, x,y ,size, text):
     graph_rect.midright = (x,y)
     surf.blit(graph_text, graph_rect)
 
-def draw_count_down(surface, x, y, size, hour):
+def draw_count_up(surface, x, y, size, hour):
     font = pygame.font.Font(font_name, size)
     text_surface = font.render(hour, True, WHITE)
     text_rect = text_surface.get_rect()
@@ -557,7 +557,7 @@ class Space_Invader(PyGameWrapper):
         draw_text(self.screen, str("game :{}".format(abs(cycle))), 15, 675, 650)
         draw_shield_bar(self.screen, 5, 5, self.player.shield)
 
-        draw_count_down(self.screen, WIDTH - 100, 10, 17, self.count_up())
+        draw_count_up(self.screen, WIDTH - 100, 10, 17, self.count_up())
 
         graph_bar(self.screen, 600, 500, self.player.speedx)
         graph_bar(self.screen, 700, 500, self.player.lives)
@@ -599,8 +599,8 @@ background_rect = background.get_rect()
 
 player_img = pygame.image.load(
     path.join(spaceship_dir, 'razafree.png')).convert_alpha()
-player_mini_img = pygame.transform.scale(player_img, (25, 25))
-player_mini_img.set_colorkey(BLACK)
+
+
 
 
 meteor_images = []
